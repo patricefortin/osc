@@ -277,6 +277,9 @@ class BoolTrueCodec extends DataCodec<bool> {
   const BoolTrueCodec() : super(typeTag: 'T');
 
   @override
+  bool appliesTo(Object? value) => value is bool && value == true;
+
+  @override
   Converter<List<int>, bool> get decoder => const BoolTrueDecoder();
 
   @override
@@ -309,6 +312,9 @@ class BoolTrueEncoder extends DataEncoder<bool> {
 
 class BoolFalseCodec extends DataCodec<bool> {
   const BoolFalseCodec() : super(typeTag: 'F');
+
+  @override
+  bool appliesTo(Object? value) => value is bool && value == false;
 
   @override
   Converter<List<int>, bool> get decoder => const BoolFalseDecoder();
