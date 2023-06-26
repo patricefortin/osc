@@ -17,10 +17,23 @@ const OSCMessageCodec oscMessageCodec = OSCMessageCodec();
 
 const StringCodec stringCodec = StringCodec();
 
+const Int64Codec int64Codec = Int64Codec();
+
+const BoolTrueCodec boolTrueCodec = BoolTrueCodec();
+
+const BoolFalseCodec boolFalseCodec = BoolFalseCodec();
+
 abstract class DataCodec<T> extends Codec<T, List<int>> {
   static final List<DataCodec<Object>> codecs =
-      List<DataCodec<Object>>.unmodifiable(
-          <DataCodec<Object>>[blobCodec, intCodec, floatCodec, stringCodec]);
+      List<DataCodec<Object>>.unmodifiable(<DataCodec<Object>>[
+    blobCodec,
+    intCodec,
+    floatCodec,
+    stringCodec,
+    int64Codec,
+    boolTrueCodec,
+    boolFalseCodec,
+  ]);
 
   final String typeTag;
 
@@ -218,6 +231,113 @@ class StringEncoder extends DataEncoder<String> {
     bytes.addAll(List.generate(pad, (i) => 0));
 
     return bytes;
+  }
+}
+
+class Int64Codec extends DataCodec<int> {
+  const Int64Codec() : super(typeTag: 'h');
+
+  @override
+  Converter<List<int>, int> get decoder => const Int64Decoder();
+
+  @override
+  Converter<int, List<int>> get encoder => const Int64Encoder();
+
+  @override
+  int length(int value) => 8;
+
+  @override
+  int toValue(String string) => int.parse(string);
+}
+
+class Int64Decoder extends DataDecoder<int> {
+  const Int64Decoder();
+
+  @override
+  int convert(List<int> input) {
+    final buffer = Uint8List.fromList(input).buffer;
+    final byteData = ByteData.view(buffer);
+    return byteData.getInt64(0);
+  }
+}
+
+class Int64Encoder extends DataEncoder<int> {
+  const Int64Encoder();
+
+  @override
+  List<int> convert(int input) {
+    final list = Uint8List(8);
+    final byteData = ByteData.view(list.buffer);
+    byteData.setInt64(0, input);
+    return list;
+  }
+}
+
+class BoolTrueCodec extends DataCodec<bool> {
+  const BoolTrueCodec() : super(typeTag: 'T');
+
+  @override
+  Converter<List<int>, bool> get decoder => const BoolTrueDecoder();
+
+  @override
+  Converter<bool, List<int>> get encoder => const BoolTrueEncoder();
+
+  @override
+  int length(bool value) => 0;
+
+  @override
+  bool toValue(String string) => true;
+}
+
+class BoolTrueDecoder extends DataDecoder<bool> {
+  const BoolTrueDecoder();
+
+  @override
+  bool convert(List<int> input) {
+    return true;
+  }
+}
+
+class BoolTrueEncoder extends DataEncoder<bool> {
+  const BoolTrueEncoder();
+
+  @override
+  List<int> convert(bool input) {
+    return Uint8List(0);
+  }
+}
+
+class BoolFalseCodec extends DataCodec<bool> {
+  const BoolFalseCodec() : super(typeTag: 'F');
+
+  @override
+  Converter<List<int>, bool> get decoder => const BoolFalseDecoder();
+
+  @override
+  Converter<bool, List<int>> get encoder => const BoolFalseEncoder();
+
+  @override
+  int length(bool value) => 0;
+
+  @override
+  bool toValue(String string) => false;
+}
+
+class BoolFalseDecoder extends DataDecoder<bool> {
+  const BoolFalseDecoder();
+
+  @override
+  bool convert(List<int> input) {
+    return false;
+  }
+}
+
+class BoolFalseEncoder extends DataEncoder<bool> {
+  const BoolFalseEncoder();
+
+  @override
+  List<int> convert(bool input) {
+    return Uint8List(0);
   }
 }
 

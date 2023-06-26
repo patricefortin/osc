@@ -13,6 +13,24 @@ void main() {
         expect(() => DataCodec.forType('x'),
             throwsA(const TypeMatcher<ArgumentError>()));
       });
+      test('blob', () {
+        expect(DataCodec.forType('b'), blobCodec);
+      });
+      test('float', () {
+        expect(DataCodec.forType('f'), floatCodec);
+      });
+      test('string', () {
+        expect(DataCodec.forType('s'), stringCodec);
+      });
+      test('h (64bits integer)', () {
+        expect(DataCodec.forType('h'), int64Codec);
+      });
+      test('true (boolean)', () {
+        expect(DataCodec.forType('T'), boolTrueCodec);
+      });
+      test('false (boolean)', () {
+        expect(DataCodec.forType('F'), boolFalseCodec);
+      });
     });
 
     group('messages', () {
@@ -86,6 +104,36 @@ void main() {
 
       test('encode', () {
         expect(stringCodec.encoder.convert('foo'), [102, 111, 111, 0]);
+      });
+    });
+
+    group('int64s', () {
+      test('decode', () {
+        expect(int64Codec.decoder.convert([0, 0, 0, 0, 0, 0, 0, 9]), 9);
+      });
+
+      test('encode', () {
+        expect(int64Codec.encoder.convert(9), [0, 0, 0, 0, 0, 0, 0, 9]);
+      });
+    });
+
+    group('true (boolean)', () {
+      test('decode', () {
+        expect(boolTrueCodec.decoder.convert([]), true);
+      });
+
+      test('encode', () {
+        expect(boolTrueCodec.encoder.convert(true), []);
+      });
+    });
+
+    group('false (boolean)', () {
+      test('decode', () {
+        expect(boolFalseCodec.decoder.convert([]), false);
+      });
+
+      test('encode', () {
+        expect(boolFalseCodec.encoder.convert(false), []);
       });
     });
   });
