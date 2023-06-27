@@ -234,41 +234,46 @@ class StringEncoder extends DataEncoder<String> {
   }
 }
 
-class Int64Codec extends DataCodec<int> {
+class Int64Codec extends DataCodec<BigInt> {
   const Int64Codec() : super(typeTag: 'h');
 
   @override
-  Converter<List<int>, int> get decoder => const Int64Decoder();
+  Converter<List<int>, BigInt> get decoder => const Int64Decoder();
 
   @override
-  Converter<int, List<int>> get encoder => const Int64Encoder();
+  Converter<BigInt, List<int>> get encoder => const Int64Encoder();
 
   @override
-  int length(int value) => 8;
+  int length(BigInt value) => 8;
 
   @override
-  int toValue(String string) => int.parse(string);
+  BigInt toValue(String string) => BigInt.from(num.parse(string));
 }
 
-class Int64Decoder extends DataDecoder<int> {
+class Int64Decoder extends DataDecoder<BigInt> {
   const Int64Decoder();
 
   @override
-  int convert(List<int> input) {
+  BigInt convert(List<int> input) {
     final buffer = Uint8List.fromList(input).buffer;
     final byteData = ByteData.view(buffer);
-    return byteData.getInt64(0);
+
+    return (BigInt.from(byteData.getUint32(0)) << 32) +
+        BigInt.from(byteData.getUint32(4));
   }
 }
 
-class Int64Encoder extends DataEncoder<int> {
+class Int64Encoder extends DataEncoder<BigInt> {
   const Int64Encoder();
 
   @override
-  List<int> convert(int input) {
+  List<int> convert(BigInt input) {
     final list = Uint8List(8);
     final byteData = ByteData.view(list.buffer);
-    byteData.setInt64(0, input);
+
+    byteData.setInt32(0, (input.toUnsigned(64) >> 32).toInt());
+    byteData.setInt32(4, input.toUnsigned(32).toInt());
+
     return list;
   }
 }

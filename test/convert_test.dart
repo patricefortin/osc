@@ -109,11 +109,28 @@ void main() {
 
     group('int64s', () {
       test('decode', () {
-        expect(int64Codec.decoder.convert([0, 0, 0, 0, 0, 0, 0, 9]), 9);
+        var dec = int64Codec.decoder;
+        expect(dec.convert([0, 0, 0, 0, 0, 0, 0, 9]), BigInt.from(9));
+        expect(dec.convert([0, 0, 0, 0, 0, 0, 0, 0xff]), (BigInt.from(255)));
+        expect(dec.convert([0, 0, 0, 0, 0xff, 0xff, 0xff, 0xff]),
+            (BigInt.from(1) << 32) - BigInt.from(1));
+        expect(dec.convert([0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff]),
+            (BigInt.from(1) << 64) - BigInt.from(1));
       });
 
       test('encode', () {
-        expect(int64Codec.encoder.convert(9), [0, 0, 0, 0, 0, 0, 0, 9]);
+        var enc = int64Codec.encoder;
+        expect(enc.convert(BigInt.from(9)), [0, 0, 0, 0, 0, 0, 0, 9]);
+        expect(enc.convert(BigInt.from(255)), [0, 0, 0, 0, 0, 0, 0, 0xff]);
+        expect(enc.convert((BigInt.from(1) << 32) - BigInt.from(1)),
+            [0, 0, 0, 0, 0xff, 0xff, 0xff, 0xff]);
+        expect(enc.convert((BigInt.from(1) << 64) - BigInt.from(1)),
+            [0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff]);
+      });
+
+      test('appliesTo', () {
+        expect(int64Codec.appliesTo(BigInt.one), true);
+        expect(int64Codec.appliesTo(1), false);
       });
     });
 
@@ -125,6 +142,11 @@ void main() {
       test('encode', () {
         expect(boolTrueCodec.encoder.convert(true), []);
       });
+
+      test('appliesTo', () {
+        expect(boolTrueCodec.appliesTo(true), true);
+        expect(boolTrueCodec.appliesTo(false), false);
+      });
     });
 
     group('false (boolean)', () {
@@ -134,6 +156,11 @@ void main() {
 
       test('encode', () {
         expect(boolFalseCodec.encoder.convert(false), []);
+      });
+
+      test('appliesTo', () {
+        expect(boolFalseCodec.appliesTo(false), true);
+        expect(boolFalseCodec.appliesTo(true), false);
       });
     });
   });
